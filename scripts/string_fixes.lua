@@ -2854,11 +2854,11 @@ end
 ---@param j integer Ending index of the substring (it is a _character_ index, not the _byte_ index)
 ---@return string _ Returned substring of the _character_ range `[i; j]`
 function getSubstringPositive(s, i, j)
-	local i = utf8.offset(s, i);
+	local i = offset(s, i);
     if i == nil then
         return ""
     end
-	local j = utf8.offset(s, j + 1);
+	local j = offset(s, j + 1);
 	if j then
 		j = j - 1;
 	end
