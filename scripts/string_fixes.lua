@@ -2764,127 +2764,105 @@ local lower_to_upper = {
     -- [""] = "",
 }
 
----Fix for the StringUTF8Manager class
+---### Fix for the StringUTF8Manager class
 ---
 ---The original function got length of utf-8 charatcers wrong. The algorithm for counting characters was revised.
 ---
----The original snippet with the example string "Привет" - the func output 7 (when there are actually 6 characters)
+---* The original FG snippet with the example string "Привет" - the func output 7 (when there are actually 6 characters)
 ---
----With the replacement snippet and the same example string, the func outputs 6, as it should be.
+---* With the replacement snippet and the same example string, the func outputs 6, as it should be.
 ---
 ---TODO IDEA - test on various languages and byte-lengths strings (3 and 4 bytes).
 ---@param s string Input string
 ---@return integer nLen UTF-8 character count
-local function len(s)
-    if not s then
-        return 0;
-    end
-    local nByteLen = #s;
-    if (nByteLen == 0) or StringUTF8Manager.isContinuationByte(s:byte(1)) then
-        return 0;
-    end
+function len(s)
+	if not s then
+		return 0;
+	end
+	local nByteLen = #s;
+	if (nByteLen == 0) or StringUTF8Manager.isContinuationByte(s:byte(1)) then
+		return 0;
+	end
 
-    local nBytePos = 1;
-    local nLen = 0;
-    while nBytePos <= nByteLen do
+	local nBytePos = 1;
+	local nLen = 0;
+	while nBytePos <= nByteLen do
         if not StringUTF8Manager.isContinuationByte(s:byte(nBytePos)) then
             nLen = nLen + 1
         end
-        nBytePos = nBytePos + 1;
-    end
+		nBytePos = nBytePos + 1;
+	end
 
-    return nLen;
+	return nLen;
 end
 
----Fix for the StringUTF8Manager class
+---### Fix for the StringUTF8Manager class
 ---
----The original function was getting wrong the last bytes of strings. The algorithm was revised.
+---The original function was getting wrong the last bytes of strings. The function was rewritten based on the C function `byteoffset` from the original Lua library (under the file `lutf8lib.c`)
 ---
----The original snippet with the example string "Привет" and position 7 - the func output 12 (even though it should output 13, as it is the position after the last character, and every character is encoded with 2 bytes)
+---* The original FG snippet with the example string "Привет" and position 7 - the func output 12 (even though it should output 13, as it is the position after the last character, and every character is encoded with 2 bytes)
 ---
----With the replacement snippet, the same example string and the position 7, the func outputs 13, as it should be.
+---* With the replacement snippet, the same example string and the position 7, the func outputs 13, as it should be.
 ---
 ---The func tries to replicate the behaviour of the same func in the `utf8` library in the later versions of Lua
+---
+---_Note: This function in Lua is very inefficient (in contrary to the original `utf8.offset` function, since the implementation is written in C).
+---When possible, make an exception for the ASCII characters, with which you should use original `string` functions._
 ---
 ---@param s string Input string
 ---@param n integer `n`-th character in the input string - may be negative
 ---@return integer|nil nBytePos The _byte_ position of the `n`-th character in the input string, or `nil` if the position is out of scope
----TODO IDEA: implement the third "start" argument, as in the "utf8" library
-local function offset(s, n)
-    if not s then
-        return nil;
+---TODO IDEA: implement the third "start" argument
+function offset(s, n)
+    local posi = n >= 0 and 1 or string.len(s) + 1
+    if n == 0 then
+      while posi > 1 and StringUTF8Manager.isContinuationByte(string.byte(s, posi)) do
+        posi = posi - 1
+      end
+    else
+      if n < 0 then
+        while n < 0 and posi > 1 do
+          repeat
+            posi = posi - 1
+          until posi <= 1 or not StringUTF8Manager.isContinuationByte(string.byte(s, posi))
+          n = n + 1
+        end
+      else
+        n = n - 1
+        while n > 0 and posi <= string.len(s) do
+          repeat
+            posi = posi + 1
+          until posi > string.len(s) or not StringUTF8Manager.isContinuationByte(string.byte(s, posi))
+          n = n - 1
+        end
+      end
     end
     if n == 0 then
-        return 1;
-    end
-
-    -- TODO IDEA: hack snippet - the utf8 library in the latest versions of Lua behaves like that. would be wise to rethink the algorithm
-    if s == "" and n == -1 then
-        return nil
-    end
-
-    if n > 0 then
-        local nBytePos = 1;
-        local nByteLen = #s;
-
-        while (n > 0) and (nBytePos <= nByteLen) do -- go until we find the right spot or until we run out of bytes
-            if StringUTF8Manager.isContinuationByte(s:byte(nBytePos)) then
-                nBytePos = nBytePos + 1;
-            else
-                n = n - 1;
-                if n ~= 0 then -- don't need to proceed on the last byte, or else we'll get the offset + 1
-                    nBytePos = nBytePos + 1
-                end
-            end
-        end
-
-        -- checks whether it is the last character (whether the algorithm stopped right before going out of range)
-        -- otherwise, if it goes out of range, the `n` variable is still more than 0, and it's nil
-        if nBytePos > nByteLen and n ~= 1 then
-            return nil
-        end
-
-        return nBytePos;
+      return posi
     else
-        local nBytePos = #s;
-        while (n < 0) and (nBytePos > 1) do -- go until we find the right spot or until we run out of bytes
-            if StringUTF8Manager.isContinuationByte(s:byte(nBytePos)) then
-                nBytePos = nBytePos - 1;
-            else
-                n = n + 1;
-                if n ~= 0 then -- don't need to proceed on the last byte, or else we'll get the offset - 1
-                    nBytePos = nBytePos - 1;
-                end
-            end
-        end
-
-        -- checks whether it is the first character (whether the algorithm stopped right before going out of range)
-        -- otherwise, if it goes out of range, the `n` variable is still less than 0, and it's nil
-        if nBytePos == 1 and n ~= -1 then
-            return nil;
-        end
-        return nBytePos;
+      return nil
     end
 end
 
 ---Fix for the StringUTF8Manager class. This function returns a substring of the string `s` with the _character_ indices (not the _byte_ indices, as in the function `string.sub`)
 ---
----The original function threw an error when the range was out of scope. I decided to return an empty string when this happens.
----Pretty hacky - use at your own discretion
+---The original FG function threw an error when the range was out of scope. I decided to return an empty string when this happens.
+---
+---_Note: Look up the `offset` documentation regarding performance. Using this function many times is inefficient._
 ---@param s string String to find substring in
 ---@param i integer Beginning index of the substring (it is a _character_ index, not the _byte_ index)
 ---@param j integer Ending index of the substring (it is a _character_ index, not the _byte_ index)
 ---@return string _ Returned substring of the _character_ range `[i; j]`
 function getSubstringPositive(s, i, j)
-    local i = offset(s, i);
+	local i = utf8.offset(s, i);
     if i == nil then
         return ""
     end
-    local j = offset(s, j + 1);
-    if j then
-        j = j - 1;
-    end
-    return s:sub(i, j);
+	local j = utf8.offset(s, j + 1);
+	if j then
+		j = j - 1;
+	end
+	return s:sub(i, j);
 end
 
 -- Preserve original string functions for 1) using by the reimplemented functions 2) just in case
