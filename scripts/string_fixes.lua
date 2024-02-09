@@ -2866,13 +2866,13 @@ function getSubstringPositive(s, i, j)
 end
 
 -- Preserve original string functions for 1) using by the reimplemented functions 2) just in case
-local original_string_upper = {}
-local original_string_lower = {}
+original_string_upper = {}
+original_string_lower = {}
 
 ---The extension function for the `string.upper` function. Supports UTF-8 characters
 ---@param s string String to uppercase
 ---@return string _ Uppercased string
-local function upper(s)
+function upper(s)
     local new_s = {};
     for i = 1, len(s) do
         local char = getSubstringPositive(s, i, i);
@@ -2884,7 +2884,7 @@ end
 ---The extension function for the `string.lower` function. Supports UTF-8 characters
 ---@param s string String to lowercase
 ---@return string _ Lowercased string
-local function lower(s)
+function lower(s)
     local new_s = {};
     for i = 1, len(s) do
         local char = getSubstringPositive(s, i, i);
@@ -2898,7 +2898,7 @@ end
 ---Capitalize their first letter in the string
 ---@param s string String, where the first character of the whole string needs to be capitalized
 ---@return string|nil _ New string with only the first letter capitalized
-local function capitalize(s)
+function capitalize(s)
     if not s then
         return nil;
     end
