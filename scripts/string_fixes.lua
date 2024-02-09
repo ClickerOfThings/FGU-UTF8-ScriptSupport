@@ -2872,11 +2872,16 @@ original_string_lower = {}
 ---The extension function for the `string.upper` function. Supports UTF-8 characters
 ---@param s string String to uppercase
 ---@return string _ Uppercased string
-function upper(s)
+local function upper(s)
     local new_s = {};
     for i = 1, len(s) do
-        local char = getSubstringPositive(s, i, i);
-        table.insert(new_s, lower_to_upper[char] or original_string_upper(char));
+        local char = string.byte(s, i)
+        if char <= 127 then
+            table.insert(new_s, original_string_upper(string.char(char)))
+        else
+            local char_utf = getSubstringPositive(s, i, i);
+            table.insert(new_s, lower_to_upper[char_utf] or char_utf);
+        end
     end
     return table.concat(new_s);
 end
@@ -2884,11 +2889,16 @@ end
 ---The extension function for the `string.lower` function. Supports UTF-8 characters
 ---@param s string String to lowercase
 ---@return string _ Lowercased string
-function lower(s)
+local function lower(s)
     local new_s = {};
     for i = 1, len(s) do
-        local char = getSubstringPositive(s, i, i);
-        table.insert(new_s, upper_to_lower[char] or original_string_lower(char));
+        local char = string.byte(s, i)
+        if char <= 127 then
+            table.insert(new_s, original_string_lower(string.char(char)))
+        else
+            local char_utf = getSubstringPositive(s, i, i);
+            table.insert(new_s, upper_to_lower[char_utf] or char_utf);
+        end
     end
     return table.concat(new_s);
 end
@@ -2898,13 +2908,20 @@ end
 ---Capitalize their first letter in the string
 ---@param s string String, where the first character of the whole string needs to be capitalized
 ---@return string|nil _ New string with only the first letter capitalized
-function capitalize(s)
+local function capitalize(s)
     if not s then
         return nil;
     end
-    local first_letter = getSubstringPositive(s, 1, 1)
-    first_letter = lower_to_upper[first_letter] or original_string_upper(first_letter)
-    return first_letter .. getSubstringPositive(s, 2, len(s))
+    if len(s) == 0 then
+        return ""
+    end
+    local char = string.byte(s, 1)
+    if char <= 127 then
+        return string.upper(string.char(char)) .. string.sub(s, 2)
+    else
+        local first_letter = getSubstringPositive(s, 1, 1)
+        return (lower_to_upper[first_letter] or first_letter) .. getSubstringPositive(s, 2, len(s))
+    end
 end
 
 ---Reimplementation of the `StringManager.capitalizeAll` function. Supports UTF-8 characters.
