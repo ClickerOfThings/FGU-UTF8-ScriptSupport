@@ -2874,13 +2874,16 @@ original_string_lower = {}
 ---@return string _ Uppercased string
 local function upper(s)
     local new_s = {};
+    local byte_position = 1
     for i = 1, len(s) do
-        local char = string.byte(s, i)
+        local char = string.byte(s, byte_position)
         if char <= 127 then
             table.insert(new_s, original_string_upper(string.char(char)))
+            byte_position = byte_position + 1
         else
             local char_utf = getSubstringPositive(s, i, i);
             table.insert(new_s, lower_to_upper[char_utf] or char_utf);
+            byte_position = byte_position + string.len(char_utf)
         end
     end
     return table.concat(new_s);
@@ -2891,13 +2894,16 @@ end
 ---@return string _ Lowercased string
 local function lower(s)
     local new_s = {};
+    local byte_position = 1
     for i = 1, len(s) do
-        local char = string.byte(s, i)
+        local char = string.byte(s, byte_position)
         if char <= 127 then
             table.insert(new_s, original_string_lower(string.char(char)))
+            byte_position = byte_position + 1
         else
             local char_utf = getSubstringPositive(s, i, i);
             table.insert(new_s, upper_to_lower[char_utf] or char_utf);
+            byte_position = byte_position + string.len(char_utf)
         end
     end
     return table.concat(new_s);
