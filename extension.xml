@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
 <root version="1.0" release="1">
-  <announcement text="UTF-8 fixes extension for Fantasy Grounds" font="emotefont" icon="rulesetlogo_CoreRPG" />
+  <announcement text="UTF-8 Script Support extension for Fantasy Grounds" font="emotefont" icon="rulesetlogo_CoreRPG" />
   <properties>
-    <name>UTF-8 fixes</name>
+    <name>UTF-8 Script Support</name>
     <version>1</version>
     <author>ClickerOfThings</author>
-    <description>UTF-8 fixes extension for CoreRPG</description>
+    <description>UTF-8 Script Support extension for CoreRPG</description>
     <ruleset><name>CoreRPG</name></ruleset>
     <ruleset><name>5E</name></ruleset>
     <loadorder>100</loadorder>

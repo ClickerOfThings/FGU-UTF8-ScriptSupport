@@ -24,7 +24,7 @@ This is a FGU extension, so it is easy to add it into your campaigns.
   * Windows 10/11: `C:\Users\[username]\AppData\Roaming\SmiteWorks\Fantasy Grounds\`
   * macOS: `/Users/[username]/SmiteWorks/Fantasy Grounds/`
   * Linux: `/home/[username]/.smiteworks/fgdata/`
-* If you are playing CoreRPG or D&D 5E rulesets, just choose the "UTF-8 fixes extension" from the Extensions list. If you want to play other rulesets, check [this instruction](#adding-rulesets) before starting the campaign
+* If you are playing CoreRPG or D&D 5E rulesets, just choose the "UTF-8 Script Support" from the Extensions list. If you want to play other rulesets, check [this instruction](#adding-rulesets) before starting the campaign
 
 ## How to use
 
