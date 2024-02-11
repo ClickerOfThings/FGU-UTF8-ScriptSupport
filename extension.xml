@@ -2,7 +2,7 @@
 <root version="1.0" release="1">
   <announcement text="UTF-8 fixes extension for Fantasy Grounds" font="emotefont" icon="rulesetlogo_CoreRPG" />
   <properties>
-    <name>UTF-8 fixes extension</name>
+    <name>UTF-8 fixes</name>
     <version>1</version>
     <author>ClickerOfThings</author>
     <description>UTF-8 fixes extension for CoreRPG</description>
